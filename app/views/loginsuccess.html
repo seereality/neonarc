@@ -1,0 +1,559 @@
+
+<div class="container billboard light">
+<style>
+input {
+  border: 1px solid rgb(46, 189, 235);
+  border-radius: 3px;
+  font-size: 1em;
+  outline: none;
+  padding: .2em .4em;
+  width: 60px;
+  text-align: center;
+}
+</style>
+<script src="https://cdn.webrtc-experiment.com/MediaStreamRecorder-v1.2.js" data-require="WhammyRecorder,MediaRecorder" data-scripts-dir="https://cdn.webrtc-experiment.com/msr/">
+</script>
+<script src="https://cdn.webrtc-experiment.com/msr/common/Cross-Browser-Declarations.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/WhammyRecorder.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/WhammyRecorderHelper.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/lib/whammy.js"></script><script src="https://cdn.webrtc-experiment.com/msr/AudioStreamRecorder/MediaRecorder.js"></script>
+
+<script>
+
+// Muaz Khan     - www.MuazKhan.com
+// MIT License   - www.webrtc-experiment.com/licence
+// Documentation - github.com/streamproc/MediaStreamRecorder
+
+// _____________________________
+// Cross-Browser-Declarations.js
+
+// animation-frame used in WebM recording
+if (!window.requestAnimationFrame) {
+    requestAnimationFrame = window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+}
+
+if (!window.cancelAnimationFrame) {
+    cancelAnimationFrame = window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame;
+}
+
+// WebAudio API representer
+if (!window.AudioContext) {
+    window.AudioContext = window.webkitAudioContext || window.mozAudioContext;
+}
+
+URL = window.URL || window.webkitURL;
+navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+if (window.webkitMediaStream) window.MediaStream = window.webkitMediaStream;
+
+IsChrome = !!navigator.webkitGetUserMedia;
+
+// Merge all other data-types except "function"
+
+function mergeProps(mergein, mergeto) {
+    mergeto = reformatProps(mergeto);
+    for (var t in mergeto) {
+        if (typeof mergeto[t] !== 'function') {
+            mergein[t] = mergeto[t];
+        }
+    }
+    return mergein;
+}
+
+function reformatProps(obj) {
+    var output = {};
+    for (var o in obj) {
+        if (o.indexOf('-') != -1) {
+            var splitted = o.split('-');
+            var name = splitted[0] + splitted[1].split('')[0].toUpperCase() + splitted[1].substr(1);
+            output[name] = obj[o];
+        } else output[o] = obj[o];
+    }
+    return output;
+}
+
+// "dropFirstFrame" has been added by Graham Roth
+// https://github.com/gsroth
+
+function dropFirstFrame(arr) {
+    arr.shift();
+    return arr;
+}
+
+
+
+// Muaz Khan     - www.MuazKhan.com
+// MIT License   - www.webrtc-experiment.com/licence
+// Documentation - github.com/streamproc/MediaStreamRecorder
+
+// ______________________
+// MediaStreamRecorder.js
+
+function MediaStreamRecorder(mediaStream) {
+    if (!mediaStream) throw 'MediaStream is mandatory.';
+
+    // void start(optional long timeSlice)
+    // timestamp to fire "ondataavailable"
+    this.start = function(timeSlice) {
+        // Media Stream Recording API has not been implemented in chrome yet;
+        // That's why using WebAudio API to record stereo audio in WAV format
+        IsChrome = true;
+        var Recorder = IsChrome ? window.StereoRecorder : window.MediaRecorderWrapper;
+
+        // video recorder (in WebM format)
+        if (this.mimeType.indexOf('video') != -1) {
+            Recorder = IsChrome ? window.WhammyRecorder : window.MediaRecorderWrapper;
+        }
+
+        // video recorder (in GIF format)
+        if (this.mimeType === 'image/gif') Recorder = window.GifRecorder;
+
+        mediaRecorder = new Recorder(mediaStream);
+        mediaRecorder.ondataavailable = this.ondataavailable;
+        mediaRecorder.onstop = this.onstop;
+
+        // Merge all data-types except "function"
+        mediaRecorder = mergeProps(mediaRecorder, this);
+
+        mediaRecorder.start(timeSlice);
+    };
+
+    this.stop = function() {
+        if (mediaRecorder) mediaRecorder.stop();
+    };
+
+    this.ondataavailable = function(blob) {
+        console.log('ondataavailable..', blob);
+    };
+
+    this.onstop = function(error) {
+        console.warn('stopped..', error);
+    };
+
+    // Reference to "MediaRecorder.js"
+    var mediaRecorder;
+}
+
+// below scripts are used to auto-load required files.
+
+function loadScript(src, onload) {
+    var root = window.MediaStreamRecorderScriptsDir;
+
+    var script = document.createElement('script');
+    script.src = root + src;
+    script.onload = onload || function() {};
+    document.documentElement.appendChild(script);
+}
+
+var scripts = document.getElementsByTagName('script');
+var scriptTag = scripts[scripts.length - 1];
+
+if (!scriptTag.getAttribute('data-manual')) {
+    var dataScriptsDir = scriptTag.getAttribute('data-scripts-dir');
+    if (dataScriptsDir) {
+        var selfDir = dataScriptsDir.indexOf('//') != -1 ? '' : scriptTag.src.replace('//', '-----').split('/')[0].replace('-----', '//');
+        window.MediaStreamRecorderScriptsDir = selfDir + dataScriptsDir;
+    } else {
+        window.MediaStreamRecorderScriptsDir = scriptTag.src.replace(scriptTag.src.split('/').pop(), '');
+    }
+
+    var requiredScripts = scriptTag.getAttribute('data-require');
+    if (!requiredScripts) {
+        // for old users
+        requiredScripts = 'StereoRecorder,MediaRecorder,WhammyRecorder,GifRecorder';
+    }
+
+    // cross-browser getUserMedia/AudioContext declarations
+    loadScript('common/Cross-Browser-Declarations.js');
+
+    requiredScripts.trim().toLowerCase().split(',').forEach(function(script) {
+        if (script == 'stereorecorder') {
+            // stores AudioContext-level objects in memory for re-usability purposes
+            loadScript('common/ObjectStore.js');
+
+            // both these files are used to support audio recording in chrome
+            loadScript('AudioStreamRecorder/StereoRecorder.js');
+            loadScript('AudioStreamRecorder/StereoAudioRecorder.js');
+        }
+
+        if (script == 'mediarecorder') {
+            // this one uses MediaRecorder draft for voice & video recording (works only in Firefox)
+            loadScript('AudioStreamRecorder/MediaRecorder.js');
+        }
+
+        if (script == 'whammyrecorder') {
+            // these files are supporting video-recording in chrome (webm)
+            loadScript('VideoStreamRecorder/WhammyRecorder.js');
+            loadScript('VideoStreamRecorder/WhammyRecorderHelper.js');
+            loadScript('VideoStreamRecorder/lib/whammy.js');
+        }
+
+        if (script == 'gifrecorder') {
+            // these files are used to support gif-recording in both chrome & firefox
+            loadScript('VideoStreamRecorder/GifRecorder.js');
+            loadScript('VideoStreamRecorder/lib/gif-encoder.js');
+        }
+        
+        if(script == 'multistreamrecorder') {
+            loadScript('MultiStreamRecorder.js');
+        }
+    });
+}
+
+// =================
+// WhammyRecorder.js
+
+function WhammyRecorder(mediaStream) {
+    // void start(optional long timeSlice)
+    // timestamp to fire "ondataavailable"
+    this.start = function(timeSlice) {
+        timeSlice = timeSlice || 1000;
+
+        mediaRecorder = new WhammyRecorderHelper(mediaStream, this);
+
+        for (var prop in this) {
+            if (typeof this[prop] !== 'function') {
+                mediaRecorder[prop] = this[prop];
+            }
+        }
+
+        mediaRecorder.record();
+
+        timeout = setInterval(function() {
+            mediaRecorder.requestData();
+        }, timeSlice);
+    };
+
+    this.stop = function() {
+        if (mediaRecorder) {
+            mediaRecorder.stop();
+            clearTimeout(timeout);
+        }
+    };
+
+    this.ondataavailable = function() {};
+
+    // Reference to "WhammyRecorder" object
+    var mediaRecorder;
+    var timeout;
+}
+
+// =======================
+// WhammyRecorderHelper.js
+
+function WhammyRecorderHelper(mediaStream, root) {
+    this.record = function(timeSlice) {
+        if (!this.width) this.width = 320;
+        if (!this.height) this.height = 240;
+
+        if (this.video && this.video instanceof HTMLVideoElement) {
+            if (!this.width) this.width = video.videoWidth || 320;
+            if (!this.height) this.height = video.videoHeight || 240;
+        }
+
+        if (!this.video) {
+            this.video = {
+                width: this.width,
+                height: this.height
+            };
+        }
+
+        if (!this.canvas) {
+            this.canvas = {
+                width: this.width,
+                height: this.height
+            };
+        }
+
+        canvas.width = this.canvas.width;
+        canvas.height = this.canvas.height;
+
+        // setting defaults
+        if (this.video && this.video instanceof HTMLVideoElement) {
+            video = this.video.cloneNode();
+        } else {
+            video = document.createElement('video');
+            video.src = URL.createObjectURL(mediaStream);
+
+            video.width = this.video.width;
+            video.height = this.video.height;
+        }
+
+        video.muted = true;
+        video.play();
+
+        lastTime = new Date().getTime();
+        whammy = new Whammy.Video();
+
+        console.log('canvas resolutions', canvas.width, '*', canvas.height);
+        console.log('video width/height', video.width || canvas.width, '*', video.height || canvas.height);
+
+        drawFrames();
+    };
+
+    var requestDataInvoked = false;
+    this.requestData = function() {
+        if (!frames.length) {
+            requestDataInvoked = false;
+            return;
+        }
+
+        requestDataInvoked = true;
+        // clone stuff
+        var internal_frames = frames.slice(0);
+
+        // reset the frames for the new recording
+        frames = [];
+
+        whammy.frames = dropFirstFrame(internal_frames);
+        var WebM_Blob = whammy.compile();
+        root.ondataavailable(WebM_Blob);
+
+        requestDataInvoked = false;
+    };
+
+    var frames = [];
+
+    function drawFrames() {
+        if (isStopDrawing) return;
+
+        if (requestDataInvoked) return setTimeout(drawFrames, 100);
+
+        var duration = new Date().getTime() - lastTime;
+        if (!duration) return drawFrames();
+
+        // via webrtc-experiment#206, by Jack i.e. @Seymourr
+        lastTime = new Date().getTime();
+
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        !isStopDrawing && frames.push({
+            duration: duration,
+            image: canvas.toDataURL('image/webp')
+        });
+
+        setTimeout(drawFrames, 10);
+    }
+
+    var isStopDrawing = false;
+
+    this.stop = function() {
+        isStopDrawing = true;
+        this.requestData();
+    };
+
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+
+    var video;
+    var lastTime;
+    var whammy;
+
+    var self = this;
+}
+</script>
+
+
+<div>
+  <label for="time-interval">Time Interval (milliseconds):</label>
+  <input type="text" id="time-interval" value="5000">
+
+  <label for="video-width">Video Width:</label>
+  <input type="text" id="video-width" value="320">
+
+  <label for="video-height">Video Height:</label>
+  <input type="text" id="video-height" value="240">
+
+  <button id="start-recording">Start Recording</button>
+  <button id="stop-recording" >Stop Recording</button>
+  <a href="#/videos">Videos</a>
+  <a href="#/main">Home</a>
+  <a href="/logout">Logout</a>
+</div>
+<div id="videos-container">
+</div>
+<script>
+var mediaConstraints = { audio: !!navigator.mozGetUserMedia, video: true };
+document.querySelector('#start-recording').onclick = function() {
+  $("#stop-recording").show();
+  $("#start-recording").hide();
+  navigator.getUserMedia(mediaConstraints, onMediaSuccess, onMediaError);
+};
+
+document.querySelector('#stop-recording').onclick = function() {
+  $("#start-recording").show();
+  $("#stop-recording").hide();
+  mediaRecorder.stop();
+  videosContainer.removeChild(video);
+};
+
+
+$("#stop-recording").hide();
+var mediaRecorder,video;
+
+function onMediaSuccess(stream) {
+   video = document.createElement('video');
+
+  var videoWidth = document.getElementById('video-width').value || 320;
+  var videoHeight = document.getElementById('video-height').value || 240;
+
+  video = mergeProps(video, {
+    controls: true,
+    width: videoWidth,
+    height: videoHeight,
+    src: URL.createObjectURL(stream)
+  });
+  video.play();
+
+  videosContainer.appendChild(video);
+  //videosContainer.appendChild(document.createElement('hr'));
+
+  mediaRecorder = new MediaStreamRecorder(stream);
+  mediaRecorder.mimeType = 'video/webm'; // this line is mandatory
+  mediaRecorder.videoWidth  = videoWidth;
+  mediaRecorder.videoHeight = videoHeight;
+  mediaRecorder.ondataavailable = function(blob) {
+    var a = document.createElement('a');
+    a.target = '_blank';
+    a.innerHTML = 'Open Recorded Video No. ' + (index++) + ' (Size: ' + bytesToSize(blob.size) + ') Time Length: ' + getTimeLength(timeInterval);
+
+    a.href = URL.createObjectURL(blob);
+    console.info("this si the blob",blob);
+    console.info("this is the data url",URL.createObjectURL(blob));
+    var reader = new window.FileReader();
+    reader.readAsDataURL(blob); 
+    var base64data;
+    reader.onloadend = function() {
+      base64data = reader.result;                
+      console.log(base64data );
+      var video = {
+        blob: blob,
+        dataURL: base64data
+      };
+      postFiles(null,video);
+    }
+    //videosContainer.appendChild(a);
+    //videosContainer.appendChild(document.createElement('hr'));
+  };
+
+  var timeInterval = document.querySelector('#time-interval').value;
+  if(timeInterval) timeInterval = parseInt(timeInterval);
+  else timeInterval = 5 * 1000;
+
+  // get blob after specific time interval
+  mediaRecorder.start(timeInterval);
+
+  document.querySelector('#stop-recording').disabled = false;
+}
+
+
+ // this function submits both audio/video or single recorded blob to nodejs server
+function postFiles(audio, video) {
+  // getting unique identifier for the file name
+  fileName = getFormattedDate() || generateRandomString();
+  fileName = "video_" + fileName;
+  // this object is used to allow submitting multiple recorded blobs
+  var files = { };
+
+  if(video) {
+    files.video = {
+      name: fileName + '.' + video.blob.type.split('/')[1],
+      type: video.blob.type,
+      contents: video.dataURL
+    };
+  }
+
+  files.uploadOnlyAudio = !video;
+
+  
+
+  xhr('/upload', JSON.stringify(files), function(_fileName) {
+    var href = location.href.substr(0, location.href.lastIndexOf('/') + 1);
+    console.log("what is href I think this is the place i need to give the gridfs filename",href);
+  /*  videoElement.src = href + 'uploads/' + _fileName;
+    videoElement.play();
+    videoElement.muted = false;
+    videoElement.controls = true;
+
+    var h2 = document.createElement('h2');
+    h2.innerHTML = '<a href="' + videoElement.src + '">' + videoElement.src + '</a>';
+    document.body.appendChild(h2);*/
+  });
+
+  /*if(mediaStream) mediaStream.stop();*/
+}
+
+// XHR2/FormData
+function xhr(url, data, callback) {
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function() {
+    if (request.readyState == 4 && request.status == 200) {
+      callback(request.responseText);
+    }
+  };
+
+  // request.upload.onprogress = function(event) {
+  //  console.log("this event is triggered after the file is uploaded",event);
+  //  progressBar.max = event.total;
+  //  progressBar.value = event.loaded;
+  //  progressBar.innerHTML = 'Upload Progress ' + Math.round(event.loaded / event.total * 100) + "%";
+  // };
+
+  request.upload.onload = function() {
+    //percentage.style.display = 'none';
+    //progressBar.style.display = 'none';
+  };
+  request.open('POST', url);
+  request.send(data);
+}
+
+// generating random string
+function generateRandomString() {
+  if (window.crypto) {
+    var a = window.crypto.getRandomValues(new Uint32Array(3)),
+    token = '';
+    for (var i = 0, l = a.length; i < l; i++) token += a[i].toString(36);
+    return token;
+  } else {
+    return (Math.random() * new Date().getTime()).toString(36).replace( /\./g , '');
+  }
+}
+
+
+
+function getFormattedDate() {
+    var date = new Date();
+    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "_" +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+    return str;
+}
+
+
+
+function onMediaError(e) {
+  console.error('media error', e);
+}
+
+var videosContainer = document.getElementById('videos-container');
+var index = 1;
+
+// below function via: http://goo.gl/B3ae8c
+function bytesToSize(bytes) {
+  var k = 1000;
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Bytes';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(k)),10);
+  return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+}
+
+// below function via: http://goo.gl/6QNDcI
+function getTimeLength(milliseconds) {
+  var data = new Date(milliseconds);
+  return data.getUTCHours()+" hours, "+data.getUTCMinutes()+" minutes and "+data.getUTCSeconds()+" second(s)";
+}
+
+window.onbeforeunload = function() {
+  document.querySelector('#start-recording').disabled = false;
+};
+</script>
+
+
+
+
+</div>

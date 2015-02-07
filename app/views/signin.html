@@ -1,0 +1,34 @@
+<div class="container billboard light">
+<h1>Sign Up Page</h1>
+<div class="container">
+   <form class="form-horizontal" name="signInForm" novalidate>
+      <div class="form-group">
+         <label for="inputEmail" class="control-label col-xs-2">Username</label> 
+         <div class="col-xs-3"> <input type="text" class="form-control" id="inputName" placeholder="Username" name="userName" ng-model="form.userName" required> </div>
+      </div>
+      <div class="form-group">
+         <label for="inputEmail" class="control-label col-xs-2">Email</label> 
+         <div class="col-xs-3"> <input type="email" class="form-control" id="inputEmail" placeholder="Email" name="userEmail" ng-model="form.userEmail" required> <span style="color:red" ng-show="signInForm.userEmail.$error.email">Enter valid email</span> </div>
+      </div>
+      <div class="form-group">
+         <label for="inputFirstName" class="control-label col-xs-2">First Name</label> 
+         <div class="col-xs-3"> <input type="text" class="form-control" id="inputFirstName" placeholder="First Name" name="userFname" ng-model="form.userFname" required> </div>
+      </div>
+      <div class="form-group">
+         <label for="inputLastName" class="control-label col-xs-2">Last Name</label> 
+         <div class="col-xs-3"> <input type="text" class="form-control" id="inputLastName" placeholder="Last Name" name="userLname" ng-model="form.userLname" required> </div>
+      </div>
+      <div class="form-group">
+         <label for="inputPassword" class="control-label col-xs-2">Password</label> 
+         <div class="col-xs-3"> <input type="password" class="form-control" id="inputPassword" placeholder="Password" name="userPassword" ng-model="form.userPassword" required> </div>
+      </div>
+      <div class="form-group">
+         <label for="inputConfirmPassword" class="control-label col-xs-2">Confirm Password</label> 
+         <div class="col-xs-3"> <input type="password" class="form-control" id="inputConfirmPassword" placeholder="Confirm Password" name="userConfirmPassword" ng-model="form.userConfirmPassword" required> </div>
+      </div>
+      <div class="form-group">
+         <div class="col-xs-offset-2 col-xs-10"> <button type="submit" ng-disabled="signInForm.$invalid" class="btn btn-primary" ng-click="signIn(signInForm,form)">Create Account</button> </div>
+      </div>
+   </form>
+</div>
+</div>

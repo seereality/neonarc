@@ -1,0 +1,4 @@
+<H1>List Of Videos</H1>
+<div ng-repeat="item in videos">
+  <a href={{"http://localhost:3000/videos/"+item._id}}>{{item.filename}}</a> <button ng-click="deleteVideo(item._id)">Delete</button>
+</div>

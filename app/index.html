@@ -1,0 +1,143 @@
+<!doctype html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <title>Shopping Mall</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/flexslider.css">
+    <link rel="stylesheet" href="styles/font-awesome.css">
+    <!-- endbuild -->
+    <!-- These things are from facedef-->
+    <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32642923-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+    </script>
+
+    <style>
+    @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+
+
+    #overlay, #webgl {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      -o-transform : scaleX(-1);
+      -webkit-transform : scaleX(-1);
+      transform : scaleX(-1);
+      -ms-filter : fliph; /*IE*/
+      filter : fliph; /*IE*/
+
+      width : 600px;
+      height : 450px;
+    }
+
+    #videoel {
+      -o-transform : scaleX(-1);
+      -webkit-transform : scaleX(-1);
+      transform : scaleX(-1);
+      -ms-filter : fliph; /*IE*/
+      filter : fliph; /*IE*/
+
+      width : 600px;
+      height : 450px;
+    }
+
+    #container {
+      position : relative;
+      width : 370px;
+    }
+
+    #content {
+      margin-top : 50px;
+      margin-left : auto;
+      margin-right : auto;
+      max-width: 600px;
+    }
+
+    #sketch {
+      display: none;
+    }
+
+    h2 {
+      font-weight : 400;
+    }
+
+    .masks {
+      display: none;
+    }
+
+    .btn {
+      font-family: 'Lato';
+      font-size: 16px;
+    }
+
+    #controls {
+      text-align : center;
+    }
+
+    .sublabel {
+      text-align : center;
+      font-size: 10px;
+      margin-top : 0px;
+    }
+  </style>
+  </head>
+  <body ng-app="weatherAppApp">
+    <!-- Add your site or application content here -->
+    <div class="fluid-container" ng-controller="MainCtrl">
+        <!--<a href="#/signin" class="btn btn-default">Sign In</a>
+        <section class="">
+            <my-slider></my-slider>
+        </section>-->
+        <div ui-view></div>
+    </div>
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/es5-shim/es5-shim.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/json3/lib/json3.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-cookies/angular-cookies.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-touch/angular-touch.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/satellizer/satellizer.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+
+        <!-- build:js({.tmp,app}) scripts/scripts.js -->
+        <script src="scripts/app.js"></script>
+        <script src="scripts/controllers/main.js"></script>
+        <script src="scripts/controllers/signin.js"></script>
+        <script src="scripts/controllers/login.js"></script>
+        <script src="scripts/controllers/video.js"></script>
+        <!-- endbuild -->
+        <!-- this is for facedef.html-->
+        <script src="https://www.webrtc-experiment.com/RecordRTC.js"> </script>
+        
+        <script src="https://www.webrtc-experiment.com/screenshot.js"></script>
+</body>
+</html>
