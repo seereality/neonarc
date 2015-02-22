@@ -12,7 +12,8 @@ var secrets = require('../config/secrets');
  */
 exports.deleteVideo = function(req, res) {
   if (!req.user) return res.redirect('/');
-  Videos.remove({_id:req.params.id},function(err){
+  console.log("selected videos",req);
+  Videos.remove({_id:{$in:req.body.videos}},function(err){
     res.json(err || 'success');
   });
 };

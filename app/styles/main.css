@@ -12,7 +12,17 @@
 body
 {
 	font-family: 'Lato', sans-serif !important;
+	background-image: url(../images/background.jpg)  !important;
 
+}
+
+
+.billboard{
+     position:absolute;
+     z-index:15;
+     top:30%;
+     left:30%;
+     margin:-100px 0 0 -150px;
 }
 
 /*----- Logo & Nav -----*/
